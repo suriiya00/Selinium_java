@@ -20,7 +20,7 @@ public class LoginPage {
  
     // Constructor
 
-    public loginPage(WebDriver driver) {
+    public LoginPage(WebDriver driver) {
 
         this.driver = driver;
 
