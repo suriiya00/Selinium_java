@@ -4,7 +4,7 @@ import org.openqa.selenium.By;
 
 import org.openqa.selenium.WebDriver;
  
-public class LoginPage {
+public class loginPage {
  
     WebDriver driver;
  
@@ -20,7 +20,7 @@ public class LoginPage {
  
     // Constructor
 
-    public LoginPage(WebDriver driver) {
+    public loginPage(WebDriver driver) {
 
         this.driver = driver;
 
