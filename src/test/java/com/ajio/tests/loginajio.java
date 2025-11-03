@@ -46,7 +46,7 @@ import com.ajio.utilities.Screenshots;
 
 import com.aventstack.extentreports.Status;
  
-public class LoginAjio extends BaseTest {
+public class loginajio extends BaseTest {
  
     @BeforeSuite
 
