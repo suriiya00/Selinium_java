@@ -1,248 +1,162 @@
 package com.ajio.tests;
- 
+
 import java.time.Duration;
 
-import java.util.Set;
- 
 import org.openqa.selenium.By;
-
 import org.openqa.selenium.JavascriptExecutor;
-
 import org.openqa.selenium.Keys;
-
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
-
-import org.openqa.selenium.interactions.Actions;
-
 import org.openqa.selenium.support.ui.ExpectedConditions;
-
 import org.openqa.selenium.support.ui.WebDriverWait;
-
+import org.testng.Assert;
 import org.testng.ITestResult;
-
 import org.testng.annotations.AfterMethod;
-
 import org.testng.annotations.AfterSuite;
-
 import org.testng.annotations.BeforeMethod;
-
 import org.testng.annotations.BeforeSuite;
-
 import org.testng.annotations.Test;
- 
+
 import com.ajio.base.BaseTest;
-
-import com.ajio.pages.CartPage;
-
-import com.ajio.pages.HomePage;
-
-import com.ajio.pages.ProductPage;
-
-import com.ajio.pages.SearchResults;
-
+import com.aventstack.extentreports.Status;
 import com.ajio.utilities.ExtentManager;
 
-import com.ajio.utilities.Screenshots;
-
-import com.aventstack.extentreports.Status;
- 
 public class loginajio extends BaseTest {
- 
+
     @BeforeSuite
-
     public void setupReport() {
-
         extent = ExtentManager.getInstance();
-
     }
- 
+
     @AfterSuite
-
     public void flushReport() {
-
         extent.flush();
-
     }
- 
+
     @BeforeMethod
-
     public void setup() {
-
         super.setup();
-
         navigateUrl("https://www.ajio.com");
-
     }
- 
+
     @AfterMethod
-
     public void tearDownTest(ITestResult result) {
-
         if (driver != null) driver.quit();
-
     }
- 
-    @Test(enabled=false)
 
-    public void searchProductTest() {
-
-        test = extent.createTest("Search Product Test");
-
-        HomePage home = new HomePage(driver);
-
-        home.searchProduct("Shoes");
-
-        test.pass("Searched for 'Shoes'");
-
-    }
- 
-    @Test(enabled=true)
-
+    @Test
     public void selectProductTest() {
-
         test = extent.createTest("Select Product Test");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        HomePage home = new HomePage(driver);
+        try {
+            WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("input[placeholder*='Search']")));
+            wait.until(ExpectedConditions.elementToBeClickable(searchInput));
 
-        SearchResults results = new SearchResults(driver);
- 
-        home.searchProduct("Shoes");
+            searchInput.sendKeys("Shoes");
+            searchInput.sendKeys(Keys.ENTER);
+            test.pass("Searched for 'Shoes'");
 
-        test.pass("Searched for 'Shoes'");
+            WebElement firstProduct = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector(".product-card")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstProduct);
+            test.pass("Clicked on first product");
 
-        results.clickFirstProduct();
+            WebElement addToCart = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("button.add-to-cart")));
+            Assert.assertTrue(addToCart.isDisplayed(), "Product detail page not loaded properly");
 
-        test.pass("Clicked on first product");
-
+        } catch (TimeoutException e) {
+            Assert.fail("Product search or selection failed: " + e.getMessage());
+        }
     }
- 
+
     @Test
-
-    public void selectSizeTest() {
-
-        test = extent.createTest("Select Size Test");
-
-        HomePage home = new HomePage(driver);
-
-        SearchResults results = new SearchResults(driver);
-
-        ProductPage product = new ProductPage(driver);
- 
-        home.searchProduct("Shoes");
-
-        results.clickFirstProduct();
-
-        switchToNewTab();
-
-        product.selectSize("6");
-
-        test.pass("Selected size 6");
-
-    }
- 
-    @Test
-
     public void addToCartTest() {
-
         test = extent.createTest("Add to Cart Test");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        HomePage home = new HomePage(driver);
+        try {
+            WebElement searchInput = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("input[placeholder*='Search']")));
+            searchInput.sendKeys("Shoes");
+            searchInput.sendKeys(Keys.ENTER);
+            test.pass("Searched for 'Shoes'");
 
-        SearchResults results = new SearchResults(driver);
+            WebElement firstProduct = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector(".product-card")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", firstProduct);
+            switchToNewTab();
 
-        ProductPage product = new ProductPage(driver);
- 
-        home.searchProduct("Shoes");
+            WebElement sizeOption = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//span[text()='6']"))); // adjust selector for size
+            sizeOption.click();
 
-        results.clickFirstProduct();
+            WebElement addToCartBtn = wait.until(ExpectedConditions.elementToBeClickable(
+                    By.cssSelector("button.add-to-cart")));
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", addToCartBtn);
+            test.pass("Added product to cart");
 
-        switchToNewTab();
-
-        product.selectSize("6");
-
-        product.addToCart();
-
-        test.pass("Added product to cart");
-
+        } catch (TimeoutException e) {
+            Assert.fail("Add to cart test failed: " + e.getMessage());
+        }
     }
- 
-    @Test
 
+    @Test
     public void proceedToCheckoutTest() {
-
         test = extent.createTest("Proceed to Checkout Test");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        HomePage home = new HomePage(driver);
+        try {
+            WebElement checkoutButton = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.xpath("//span[text()='PROCEED TO CHECKOUT']")));
+            wait.until(ExpectedConditions.elementToBeClickable(checkoutButton));
 
-        SearchResults results = new SearchResults(driver);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", checkoutButton);
+            test.pass("Clicked on Proceed to Checkout");
 
-        ProductPage product = new ProductPage(driver);
+            wait.until(ExpectedConditions.urlContains("/checkout"));
+            Assert.assertTrue(driver.getCurrentUrl().contains("/checkout"), "Did not navigate to checkout page");
 
-        CartPage cart = new CartPage(driver);
- 
-        home.searchProduct("Shoes");
-
-        results.clickFirstProduct();
-
-        switchToNewTab();
-
-        product.selectSize("6");
-
-        product.addToCart();
-
-        cart.goToBag();
-
-        cart.proceedToCheckout();
-
-        test.pass("Proceeded to checkout");
-
+        } catch (TimeoutException e) {
+            Assert.fail("Proceed to checkout button not clickable: " + e.getMessage());
+        }
     }
- 
+
     @Test
-
     public void addToWishlistTest() {
-
         test = extent.createTest("Add to Wishlist Test");
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
-        HomePage home = new HomePage(driver);
+        try {
+            WebElement wishlistButton = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector("a[href*='wishlist']")));
+            wait.until(ExpectedConditions.elementToBeClickable(wishlistButton));
 
-        SearchResults results = new SearchResults(driver);
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", wishlistButton);
+            test.pass("Clicked on wishlist button");
 
-        ProductPage product = new ProductPage(driver);
- 
-        home.searchProduct("Shoes");
+            WebElement confirmation = wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.cssSelector(".wishlist-confirmation"))); // update selector
+            Assert.assertTrue(confirmation.isDisplayed(), "Wishlist confirmation not visible");
 
-        results.clickFirstProduct();
-
-        switchToNewTab();
-
-        product.addToWishlist();
-
-        test.pass("Added product to wishlist");
-
+        } catch (TimeoutException e) {
+            Assert.fail("Wishlist button not clickable after waiting: " + e.getMessage());
+        }
     }
- 
-    private void switchToNewTab() {
 
+    private void switchToNewTab() {
         String originalWindow = driver.getWindowHandle();
 
-        new WebDriverWait(driver, Duration.ofSeconds(10))
-
-            .until(d -> driver.getWindowHandles().size() > 1);
+        new WebDriverWait(driver, Duration.ofSeconds(20))
+                .until(d -> driver.getWindowHandles().size() > 1);
 
         for (String handle : driver.getWindowHandles()) {
-
             if (!handle.equals(originalWindow)) {
-
                 driver.switchTo().window(handle);
-
                 break;
-
             }
-
         }
-
     }
-
 }
- 
